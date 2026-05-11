@@ -411,7 +411,6 @@ jobs:
       # "apt-get install erofs-utils" installs an older version (1.7.1 as of 2025-09-18)
       # Build and install erofs-utils 1.8.10 from source to get a newer version
       - name: Build and install erofs-utils from source
-        if: matrix.os != 'ubuntu-24.04-riscv'
         run: |
           # Install dependencies
           sudo apt-get update
@@ -440,13 +439,18 @@ jobs:
           mkfs.erofs --version
 
       - name: Load EROFS kernel module
-        if: matrix.os != 'ubuntu-24.04-riscv'
         run: |
-          sudo modprobe erofs
+          if ! (lsmod | grep -q erofs); then
+            # load erofs if not already there
+            sudo modprobe erofs
+          fi
 
       - name: Load dm-verity kernel module
         run: |
-          sudo modprobe dm_verity
+          if ! (lsmod | grep -q dm_verity); then
+            # load dm_verity if not already there
+            sudo modprobe dm_verity
+          fi
 
       - name: Install containerd
         env:
